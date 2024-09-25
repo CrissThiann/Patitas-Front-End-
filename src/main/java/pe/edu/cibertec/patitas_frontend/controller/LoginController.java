@@ -8,15 +8,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
+import pe.edu.cibertec.patitas_frontend.dto.LoginRequestDTO;
+import pe.edu.cibertec.patitas_frontend.dto.LoginResponseDTO;
 import pe.edu.cibertec.patitas_frontend.viewmodel.LoginModel;
-import pe.edu.cibertec.patitas_frontend.viewmodel.LoginRq;
 
 @Controller
 @RequestMapping("/login")
 public class LoginController {
 
     @Autowired
-    private RestTemplate restTemplate;
+    RestTemplate restTemplate;
 
     @GetMapping("/inicio")
     public String inicio(Model model){
@@ -42,17 +43,48 @@ public class LoginController {
 
         }
 
-        //Llamada al servicio de auntenticacion del backend
-        String backendurl = "http://localhost:8090/autenticacion/login";
-        LoginRq loginRq = new LoginRq(tipoDocumento, numeroDocumento, password);
-        LoginModel loginModel = restTemplate.postForObject(backendurl, loginRq, LoginModel.class);
+        try {
 
-        if (loginModel != null && "00".equals(loginModel.codigo())) {
+            // Invocar servicio de autenticación
+            String endpoint = "http://localhost:8090/autenticacion/login";
+            LoginRequestDTO loginRequestDTO = new LoginRequestDTO(tipoDocumento, numeroDocumento, password);
+            LoginResponseDTO loginResponseDTO = restTemplate.postForObject(endpoint, loginRequestDTO, LoginResponseDTO.class);
+
+            if (loginResponseDTO.codigo().equals("00")){
+
+                LoginModel loginModel = new LoginModel("00", "", loginResponseDTO.nombreUsuario());
+                model.addAttribute("loginModel", loginModel);
+                return "principal";
+
+            } else {
+
+                LoginModel loginModel = new LoginModel("02", "Error: Autenticación fallida", "");
+                model.addAttribute("loginModel", loginModel);
+                return "inicio";
+
+            }
+
+        } catch(Exception e) {
+
+            LoginModel loginModel = new LoginModel("99", "Error: Ocurrió un problema en la autenticación", "");
             model.addAttribute("loginModel", loginModel);
-            return "principal";
+            System.out.println(e.getMessage());
+            return "inicio";
+
         }
-        model.addAttribute("loginModel", new LoginModel("01", "Credenciales erroneas..", ""));
-        return "inicio";
+
+
+//        //Llamada al servicio de auntenticacion del backend
+//        String backendurl = "http://localhost:8090/autenticacion/login";
+//        LoginRq loginRq = new LoginRq(tipoDocumento, numeroDocumento, password);
+//        LoginModel loginModel = restTemplate.postForObject(backendurl, loginRq, LoginModel.class);
+//
+//        if (loginModel != null && "00".equals(loginModel.codigo())) {
+//            model.addAttribute("loginModel", loginModel);
+//            return "principal";
+//        }
+//        model.addAttribute("loginModel", new LoginModel("01", "Credenciales erroneas..", ""));
+//        return "inicio";
 
 
 
