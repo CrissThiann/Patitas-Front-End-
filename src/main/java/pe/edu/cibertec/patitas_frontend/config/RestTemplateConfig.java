@@ -13,8 +13,8 @@ public class RestTemplateConfig {
     @Bean
     public RestTemplate restTemplateAutenticacion(RestTemplateBuilder builder) {
         return builder
-                .rootUri("http://localhost:8090/autentication")
-                .setConnectTimeout(Duration.ofSeconds(5)) // tiempo deespea maximo para la espeade conexión con el servidor
+                .rootUri("http://localhost:8090/autenticacion")
+                .setConnectTimeout(Duration.ofSeconds(5)) // tiempo de espera maximo para la espeade conexión con el servidor
                 .setReadTimeout(Duration.ofSeconds(15)) // tiempo de espera maximo para recibir la respuesta total
                 .build();
 
